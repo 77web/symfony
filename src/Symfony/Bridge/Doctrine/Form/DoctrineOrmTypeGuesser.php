@@ -15,6 +15,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\Common\Persistence\Mapping\MappingException;
 use Doctrine\ORM\Mapping\MappingException as LegacyMappingException;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Form\FormTypeGuesserInterface;
 use Symfony\Component\Form\Guess\Guess;
 use Symfony\Component\Form\Guess\TypeGuess;
@@ -51,7 +52,12 @@ class DoctrineOrmTypeGuesser implements FormTypeGuesserInterface
             return new TypeGuess('entity', array('em' => $name, 'class' => $mapping['targetEntity'], 'multiple' => $multiple), Guess::HIGH_CONFIDENCE);
         }
 
-        switch ($metadata->getTypeOfField($property)) {
+        $type = $metadata->getTypeOfField($property);
+        if (null === $type) {
+            $type = $metadata->getTypeOfField(lcfirst(Container::camelize($property)));
+        }
+
+        switch ($type) {
             case 'array':
                 return new TypeGuess('collection', array(), Guess::MEDIUM_CONFIDENCE);
             case 'boolean':
