@@ -18,6 +18,16 @@ use Symfony\Component\Form\Guess\ValueGuess;
 
 class DoctrineOrmTypeGuesserTest extends \PHPUnit_Framework_TestCase
 {
+    public function testTypeGuesser()
+    {
+        $classMetadata = $this->getMockBuilder('Doctrine\ORM\Mapping\ClassMetadata')->disableOriginalConstructor()->getMock();
+        $classMetadata->expects($this->exactly(2))->method('getTypeOfField')->with($this->logicalOr('sampleField', 'sample_field'))->will($this->returnValueMap([['sampleField', 'date'], ['sample_field', null]]));
+        $classMetadata->expects($this->once())->method('getTypeOfColumn')->with('sample_field')->will($this->returnValue('date'));
+
+        $this->assertEquals('date', $this->getGuesser($classMetadata)->guessType('TestEntity', 'sampleField')->getType());
+        $this->assertEquals('date', $this->getGuesser($classMetadata)->guessType('TestEntity', 'sample_field')->getType());
+    }
+
     /**
      * @dataProvider requiredProvider
      */

@@ -51,7 +51,12 @@ class DoctrineOrmTypeGuesser implements FormTypeGuesserInterface
             return new TypeGuess('entity', array('em' => $name, 'class' => $mapping['targetEntity'], 'multiple' => $multiple), Guess::HIGH_CONFIDENCE);
         }
 
-        switch ($metadata->getTypeOfField($property)) {
+        $type = $metadata->getTypeOfField($property);
+        if (null === $type) {
+            $type = $metadata->getTypeOfColumn($property);
+        }
+
+        switch ($type) {
             case 'array':
                 return new TypeGuess('collection', array(), Guess::MEDIUM_CONFIDENCE);
             case 'boolean':
